@@ -11,7 +11,7 @@ When enabled on a fleet in "Position defense" mode, fleets will respond to attac
 
 ## Installation
 
-1. Copy the extension folder into the game's `extensions` directory.
+1. Copy the folder into the game's `extensions` directory.
 2. Start (or restart) X4. The extension is loaded automatically.
 
 ## Usage
