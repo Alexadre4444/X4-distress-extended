@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<diff>
+    <add sel="/aiscript[@name=&quot;order.fight.protect.position&quot;]/interrupts/child::handler[position()=last()]" pos="after">
+    <handler>
+      <conditions>
+        <!-- param2 == attacked, param3 == attacker -->
+        <event_object_signalled object="$targetsector" param="'ship_in_distress'" check="false"/>        
+        <check_value value="$respondtodistresscalls"/>
+        <check_value value="not $alreadyreinforcing?"/>
+        <check_value value="event.param2.sector == $targetsector"/>
+        <check_value value="event.param3.sector == $targetsector"/>
+        <check_value value="event.param2.owner == this.assignedcontrolled.trueowner"/>
+        <!-- mitigates response to attacks reported via distress drones that happen far from stations -->
+        <check_value value="event.param2.cansee.{event.param3}"/>
+        <!-- NB: if this is ever extended to respond to distress calls from other factions, add a mayattack check against event.param3 here. -->
+        <set_value name="$alreadyreinforcing"/>
+      </conditions>
+      <actions>
+        <debug_text text="'responding to distress call by %s %s %s in sector %s.\nattacker: %s %s %s. attacker distance to attacked: %sm'.[@event.param2.idcode, @event.param2.knownname, event.param2, @event.param2.sector.knownname, @event.param3.idcode, @event.param3.knownname, event.param3, event.param3.distanceto.{event.param2}]" chance="$debugchance"/>
+        <set_value name="$_destinationobject" exact="event.param2"/>
+        <do_if value="this.isplayerowned and event.param3.isinliveview">
+          <set_value name="$_destinationobject" exact="event.param3"/>
+        </do_if>
+        <set_value name="$_locdestination" exact="[$targetsector, $_destinationobject.relativeposition.{$targetsector}]"/>
+        <create_order object="this.assignedcontrolled" id="'AttackInRange'">
+          <param name="destination" value="$_locdestination"/>
+          <param name="radius" value="this.assignedcontrolled.maxradarrange"/>
+          <param name="enforceradius" value="false"/>
+          <param name="debugchance" value="$debugchance"/>
+        </create_order>
+        <remove_value name="$_locdestination"/>
+        <remove_value name="$_destinationobject"/>
+      </actions>
+    </handler>
+    </add>
+</diff>
